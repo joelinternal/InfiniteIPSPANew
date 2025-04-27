@@ -4,30 +4,34 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 
-const initialData = {
-    slno: 0,
-    brspdMgr: "",
-    program: "",
-    status: "Active",
-    name: "",
-    roleaspersow: "",
-    duration: "",
-    startdate: null,
-    enddate: null,
-    location: "Offshore",
-    type: "salaried",
-    hours: "",
-    billrate: "",
-    payrate: "",
-    loadedrate: "",
-    billable: "Yes",
-    accountId: 0,
-    projectId: 0,
-    sow: 0,
-    test: ""
-}
 
-const AddGM = ({ refreshlst, setRefreshlst, screen,accountdata }) => {
+
+const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, appProjectId, appSowId }) => {
+
+    const [initialData, setInitialData] = useState({
+        slno: 0,
+        brspdMgr: "",
+        program: "",
+        status: "Active",
+        name: "",
+        roleaspersow: "",
+        duration: "",
+        startdate: null,
+        enddate: null,
+        location: "Offshore",
+        type: "salaried",
+        hours: "",
+        billrate: "",
+        payrate: "",
+        loadedrate: "",
+        billable: "Yes",
+        accountId: 0,
+        projectId: 0,
+        sow: 0,
+        test: ""
+    })
+
+
     const [rows, setRows] = useState([
         initialData
     ])
@@ -35,9 +39,18 @@ const AddGM = ({ refreshlst, setRefreshlst, screen,accountdata }) => {
     const [listdata, setlistdata] = useState([])
     const [refresh, setRefresh] = useState(true);
 
+
     const [accountId, setAccountId] = useState(0);
     const [projectId, setProjectId] = useState(0);
-    const [sow, setsow] = useState(0);
+    const [sowId, setSowId] = useState(0);
+
+    useEffect(() => {
+        setAccountId(appAccountId);
+        setProjectId(appProjectId);
+        setSowId(appSowId);
+        setInitialData({ ...initialData, accountId: appAccountId, projectId: appProjectId, sow: appSowId })
+        setRows([{ ...initialData, accountId: appAccountId, projectId: appProjectId, sow: appSowId }])
+    }, [appAccountId, appProjectId, appSowId])
 
     const [isNewProject, setisNewProject] = useState(false);
 
@@ -64,7 +77,7 @@ const AddGM = ({ refreshlst, setRefreshlst, screen,accountdata }) => {
             slno: rows.length + 1,
             projectId: projectId,
             accountId: accountId,
-            sow: sow
+            sow: sowId
         }
         setRows([...rows, newRow])
     }
@@ -76,7 +89,6 @@ const AddGM = ({ refreshlst, setRefreshlst, screen,accountdata }) => {
 
     const handleDelete = (Id) => {
         axios.delete(`http://localhost:5071/api/GM/${Id}`).then(res => {
-            console.info("Delete res", res)
             getdata(accountId, projectId)
         })
     }
@@ -102,12 +114,11 @@ const AddGM = ({ refreshlst, setRefreshlst, screen,accountdata }) => {
     }
 
     const handleSave = () => {
-        if (accountId == 0 || projectId == 0 || sow == 0) {
+        if (accountId == 0 || projectId == 0 || sowId == 0) {
             alert("Please select Account and Project")
             return
         }
         axios.post("http://localhost:5071/api/GM", rows).then(res => {
-            console.info("res", res)
             setisNewProject(true)
             setRows([initialData])
             setRefreshlst(o => !o)
@@ -122,9 +133,6 @@ const AddGM = ({ refreshlst, setRefreshlst, screen,accountdata }) => {
                 setlistdata(res.data)
             else if (!isNewProject && res.data?.length > 0) {
                 setlistdata(res.data)
-                setAccountId(0)
-                setProjectId(0)
-                alert('Already exist this project')
             }
         })
     }
@@ -203,27 +211,27 @@ const AddGM = ({ refreshlst, setRefreshlst, screen,accountdata }) => {
     }, [projectId])
 
     useEffect(() => {
-        if (sow > 0) {
+        if (sowId > 0) {
             let updatedrows = rows.map((row, i) => (
                 {
-                    ...row, sow: sow
+                    ...row, sow: sowId
                 }
             ))
             setRows(updatedrows)
         }
 
-    }, [sow])
+    }, [sowId])
 
     return (
         <>
             <div>
 
-            <div className='text-lg font-bold'>
-                Account Name: {accountdata?.account?.accountName}
-                <br />
-                Project Name: {accountdata?.project?.projectName}
+                <div className='text-lg font-bold'>
+                    Account Name: {accountdata?.account?.accountName}
+                    <br />
+                    Project Name: {accountdata?.project?.projectName}
 
-            </div>
+                </div>
 
                 <div className='overflow-x-auto w-full'>
                     <table className='min-w-full divide-y divide-gray-100 text-sm'>
@@ -342,7 +350,7 @@ const AddGM = ({ refreshlst, setRefreshlst, screen,accountdata }) => {
                 </div>
                 <div className='flex justify-end'>
                     <button
-                        disabled={!((screen == "Create" && listdata.length == 0) || screen == "Edit" || isNewProject)}
+                        // disabled={!((screen == "Create" && listdata.length == 0) || screen == "Edit" || isNewProject)}
                         className='bg-blue-600 text-white m-2 py-2 px-10 mb-5 hover:bg-blue-800 rounded-lg text-[20px] disabled:cursor-not-allowed disabled:opacity-50' onClick={handleSave}>Save</button>
                 </div>
             </div>

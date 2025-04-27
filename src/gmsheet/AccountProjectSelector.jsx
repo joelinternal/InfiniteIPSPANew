@@ -8,12 +8,14 @@ import { set } from 'date-fns';
 import axios from 'axios';
 import { Autocomplete, TextField, Chip, Box, CircularProgress } from '@mui/material';
 
+import CreatableSelect from "react-select/creatable";
+
 const style = {
     position: 'absolute',
     top: '50%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    width: 600,
+    width: 750,
     bgcolor: 'background.paper',
     border: '2px solid #000',
     boxShadow: 24,
@@ -35,36 +37,34 @@ const AccountProjectSelector = ({ setShowCreateGMSheet, screen, open, setOpen, p
 
     const [inputValue, setInputValue] = useState('');
 
-    const handleInputChange = (event, value) => {
+    const handleChange = (value) => {
         setInputValue(value);
-        let sowoptions = sow.find(a => a.sowName == value)
-        setsId(sowoptions ? sowoptions.sowId : 0)
-        setaccountdata(sow.find(a => a.sowName == value))
+        setsId(value.value);
     };
 
-    const handleCreateNewOption = () => {
-        if (inputValue && !sow.some(option => option.sowName === inputValue)) {
-            const newOption = {
-                AccountId: aId,
-                ProjectId: pId,
-                sowName: inputValue
-            };
-            axios.post(`http://localhost:5071/api/Account/Sow`, newOption).then(res => {
-                console.info("res", res)
-                setsow(x => [...x, res.data])
-                setInputValue(res.data.sowName);
-                setsId(res.data.sowId)
-                setrefreshsow(a => !a)              
-            })
-        }
+    const handleCreate = (inputValue) => {
+        const newOption = {
+            AccountId: aId,
+            ProjectId: pId,
+            sowName: inputValue
+        };
+
+        axios.post(`http://localhost:5071/api/Account/Sow`, newOption).then(res => {
+            console.info("res", res)
+            setsow(x => [...x, res.data])
+            setInputValue({ value: res.data.sowId, label: res.data.sowName });
+            setsId(res.data.sowId)
+            setrefreshsow(a => !a)
+        })
     };
-
-
 
     const handleselect = () => {
         if (aId == 0 || pId == 0 || sId == 0) {
             return
         }
+
+        setaccountdata(sow.find(a => a.sowId == sId))
+
         setAccountId(aId)
         setProjectId(pId)
         SetsowId(sId)
@@ -98,9 +98,8 @@ const AccountProjectSelector = ({ setShowCreateGMSheet, screen, open, setOpen, p
 
     const getsowdata = () => {
         axios.get(`http://localhost:5071/api/Account/Sow/${aId}/${pId}`).then(res => {
-            console.info("res", res)
+            console.info("res", res.data)
             setsow(res.data)
-
             let sdata = res.data;
             if (sdata.length > 0 && sId > 0) {
                 setaccountdata(sdata.find(a => a.sowId == sId))
@@ -137,15 +136,15 @@ const AccountProjectSelector = ({ setShowCreateGMSheet, screen, open, setOpen, p
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                             </svg>
                         </div>
-                        <div className='flex justify-between'>
-                            <select value={aId} className='px-4 py-1 h-12 mt-2 mr-5 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' onChange={(e) => { setaId(e.target.value) }}>
+                        <div className='flex justify-between mt-5'>
+                            <select value={aId} className='px-4 w-full py-1 h-12 mt-2 mr-5 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' onChange={(e) => { setaId(e.target.value); setpId(0); setInputValue({ value: 0, label: "No Data" }); setsId(0); }}>
                                 <option value={0}>Select Account</option>
                                 {accounts.map((account, id) => (
                                     <option value={account.accountId} key={"accounts" + id}>{account.accountName}</option>
                                 ))}
                             </select>
 
-                            <select value={pId} className='px-4 mr-5 py-1 mt-2 h-12 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' onChange={(e) => { setpId(e.target.value) }}>
+                            <select value={pId} className='px-4 w-full mr-5 py-1 mt-2 h-12 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' onChange={(e) => { setpId(e.target.value); setInputValue({ value: 0, label: "No Data" }); setsId(0); }}>
                                 <option value={0}>Select Project</option>
                                 {
                                     projects.map((project, id) => (
@@ -154,33 +153,28 @@ const AccountProjectSelector = ({ setShowCreateGMSheet, screen, open, setOpen, p
                                 }
                             </select>
 
-                            <Box sx={{ width: 120 }}>
-
-                                <Autocomplete
-                                    freeSolo
-                                    value={inputValue}
-                                    onInputChange={handleInputChange}
-                                    options={sow.map(option => option.sowName)} // Map the options to their values for display
-                                    renderInput={(params) => (
-                                        <TextField
-                                            {...params}
-                                            label="Select or Create"
-                                            variant="outlined"
-                                            onBlur={handleCreateNewOption} // Create new option on blur
-                                        />
-                                    )}
-                                    renderOption={(props, option) => {
-                                        const optionData = sow.find(opt => opt.sowName === option); // Find the option with matching value
-                                        return (
-                                            <li {...props}>
-                                                <Chip label={optionData.sowName} />
-                                            </li>
-                                        );
-                                    }}
-                                    isOptionEqualToValue={(option, value) => option === value}
-                                    disableClearable
-                                />
-                            </Box>
+                            <CreatableSelect
+                                className='w-full mt-2'
+                                styles={{
+                                    control: (base) => ({
+                                        ...base,
+                                        height: 48,
+                                        minHeight: 48
+                                    })
+                                }}
+                                isClearable
+                                onChange={handleChange}
+                                onCreateOption={handleCreate}
+                                options={sow?.map(sow => ({
+                                    value: sow.sowId,
+                                    label: sow.sowName
+                                })) || [{
+                                    value: 0,
+                                    label: "No Data"
+                                }]}
+                                value={inputValue}
+                                placeholder="Select SOW..."
+                            />
                         </div>
                         <div className='flex justify-center mt-5'>
                             <button className='bg-blue-600 text-white m-2 py-2 px-10 hover:bg-blue-800 rounded-lg' onClick={handleselect}>Select</button>

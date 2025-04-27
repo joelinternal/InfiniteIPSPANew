@@ -57,7 +57,13 @@ function App() {
           <div className="bg-white p-4 rounded-xl w-[90%] shadow-md">
             {
               showCreateGMSheet === "Create" &&
-              <AddGM setRefreshlst={setRefreshlst} screen={selectedScreen} accountdata={accountdata} />
+              <AddGM setRefreshlst={setRefreshlst} 
+              screen={selectedScreen} 
+              accountdata={accountdata} 
+              appAccountId={accountId}
+              appProjectId={projectId}
+              appSowId={sowId}
+              />
             }
             {
               showCreateGMSheet === "Open" &&
