@@ -132,7 +132,6 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
 
     const getdata = (accountId, projectId) => {
         axios.get(`http://localhost:5071/api/GM/${accountId}/${projectId}`).then(res => {
-            console.info("res", res)
             if (isNewProject && res.data?.length > 0)
                 setlistdata(res.data)
             else if (!isNewProject && res.data?.length > 0) {
@@ -227,7 +226,7 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
     }, [sowId])
 
     return (
-        <>
+        <>{appAccountId > 0 && appProjectId > 0 && appSowId > 0 && <>
             <div>
 
                 <div className='text-lg font-bold'>
@@ -359,7 +358,7 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
                 </div>
             </div>
             {
-                ((screen == "Create" && listdata.length > 0 && isNewProject) || screen == "Edit" || isNewProject) &&
+                listdata.length > 0 && accountId > 0 && projectId > 0 && sowId > 0 &&
 
                 <div className='overflow-x-auto w-full'>
                     <table className="min-w-full border border-gray-600 text-sm text-left">
@@ -439,6 +438,8 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
                     </table>
                 </div>
             }
+        </>
+        }
         </>
     )
 }

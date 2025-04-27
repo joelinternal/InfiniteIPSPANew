@@ -2,11 +2,8 @@ import React, { useEffect, useState } from 'react'
 import Backdrop from '@mui/material/Backdrop';
 import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import { set } from 'date-fns';
 import axios from 'axios';
-import { Autocomplete, TextField, Chip, Box, CircularProgress } from '@mui/material';
+import { Box } from '@mui/material';
 
 import CreatableSelect from "react-select/creatable";
 
@@ -38,8 +35,13 @@ const AccountProjectSelector = ({ setShowCreateGMSheet, screen, open, setOpen, p
     const [inputValue, setInputValue] = useState('');
 
     const handleChange = (value) => {
-        setInputValue(value);
-        setsId(value.value);
+        if (value) {
+            setInputValue(value);
+            setsId(value.value);
+        } else {
+            setInputValue({ value: 0, label: "No Data" });
+            setsId(0);
+        }
     };
 
     const handleCreate = (inputValue) => {
@@ -50,7 +52,6 @@ const AccountProjectSelector = ({ setShowCreateGMSheet, screen, open, setOpen, p
         };
 
         axios.post(`http://localhost:5071/api/Account/Sow`, newOption).then(res => {
-            console.info("res", res)
             setsow(x => [...x, res.data])
             setInputValue({ value: res.data.sowId, label: res.data.sowName });
             setsId(res.data.sowId)
@@ -74,7 +75,6 @@ const AccountProjectSelector = ({ setShowCreateGMSheet, screen, open, setOpen, p
 
     const getaccountdata = () => {
         axios.get(`http://localhost:5071/api/Account`).then(res => {
-            console.info("res", res)
             setaccounts(res.data)
         })
     }
@@ -85,7 +85,6 @@ const AccountProjectSelector = ({ setShowCreateGMSheet, screen, open, setOpen, p
 
     const getprojectdata = (id) => {
         axios.get(`http://localhost:5071/api/Account/Projects/${id}`).then(res => {
-            console.info("res", res)
             setprojects(res.data)
         })
     }
@@ -98,7 +97,6 @@ const AccountProjectSelector = ({ setShowCreateGMSheet, screen, open, setOpen, p
 
     const getsowdata = () => {
         axios.get(`http://localhost:5071/api/Account/Sow/${aId}/${pId}`).then(res => {
-            console.info("res", res.data)
             setsow(res.data)
             let sdata = res.data;
             if (sdata.length > 0 && sId > 0) {

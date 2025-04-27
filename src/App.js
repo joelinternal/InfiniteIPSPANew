@@ -23,6 +23,8 @@ function App() {
     if (screen == "Open" || screen == "Create") {
       setAccountId(0)
       setProjectId(0);
+      SetsowId(0);
+      setaccountdata({})
       setOpen(true)
     }
 
@@ -44,14 +46,9 @@ function App() {
             Open/Run GM Sheet
           </button>
 
-          {/* <button className={`p-3 rounded-lg text-white border-r-2 ${showCreateGMSheet!=='Edit'?'bg-blue-600 hover:bg-blue-800':'bg-green-600 hover:bg-green-800'} `}
-            onClick={() => handleOpenGM("Edit")}>
-            Edit GM Sheet
-          </button> */}
-
         </div>
       </div>
-      {showCreateGMSheet != "" &&
+      {showCreateGMSheet != "" && accountId > 0 &&
 
         <div className="bg-gray-100 py-8 flex items-center justify-center">
           <div className="bg-white p-4 rounded-xl w-[90%] shadow-md">
@@ -80,6 +77,7 @@ function App() {
           </div>
         </div>
       }
+      {open &&
       <AccountProjectSelector
         open={open}
         setOpen={setOpen}
@@ -92,7 +90,7 @@ function App() {
         SetsowId={SetsowId}
         sowId={sowId}
         setaccountdata={setaccountdata}
-      />
+      />}
     </>
   );
 }
