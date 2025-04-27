@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react'
 import { saveAs } from "file-saver";
 
-const OpenGM = ({ refreshlst, projectId, accountId }) => {
+const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
 
     const [listdata, setlistdata] = useState([])
     const [listloadrunsheet, setloadrunsheet] = useState([])
@@ -90,15 +90,9 @@ const OpenGM = ({ refreshlst, projectId, accountId }) => {
     return (
         <div>
             <div className='text-lg font-bold'>
-                Account Name: {[{ Id: 0, Name: "" }, { Id: 1, Name: "Account1" }, { Id: 2, Name: "Account2" },
-                { Id: 3, Name: "Account3" }, { Id: 4, Name: "Account4" }, { Id: 5, Name: "Account5" }
-                ]
-                    .filter(a => a.Id == accountId)[0].Name}
+                Account Name: {accountdata?.account?.accountName}
                 <br />
-                Project Name: {[{ Id: 0, Name: "" }, { Id: 1, Name: "Project1" }, { Id: 2, Name: "Project2" },
-                { Id: 3, Name: "Project3" }, { Id: 4, Name: "Project4" }, { Id: 5, Name: "Project5" }
-                ]
-                    .filter(a => a.Id == projectId)[0].Name}
+                Project Name: {accountdata?.project?.projectName}
             </div>
             <div>
                 <table className='min-w-full divide-y divide-gray-200 text-sm border border-black' style={{ marginBottom: "2rem" }}>
@@ -262,7 +256,7 @@ const OpenGM = ({ refreshlst, projectId, accountId }) => {
                             <th className='px-4 py-4 border border-gray-600'>{listloadrunsheet[0]?.lblsecondmonth}</th>
                             <th className='px-4 py-4 border border-gray-600'>{listloadrunsheet[0]?.lblthirdmonth}</th>
 
-                            <th className='px-4 py-4 border border-gray-600'>{listloadrunsheet[0]?.lblfirstmonth}</th>                               
+                            <th className='px-4 py-4 border border-gray-600'>{listloadrunsheet[0]?.lblfirstmonth}</th>
                             <th className='px-4 py-4 border border-gray-600'>{listloadrunsheet[0]?.lblsecondmonth}</th>
                             <th className='px-4 py-4 border border-gray-600'>{listloadrunsheet[0]?.lblthirdmonth}</th>
 

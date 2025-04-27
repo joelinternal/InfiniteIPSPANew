@@ -94,10 +94,14 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
     }
 
     const handleDateChange = (date, indx, stdate) => {
+        if (!date) return;
+        const cleanDate = `${date.getFullYear()}-${(date.getMonth() + 1)
+            .toString()
+            .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
         if (stdate == "startdate") {
             let updatedrows = rows.map((row, i) => (
                 indx == i ? {
-                    ...row, [stdate]: date, enddate: row.enddate && date > row.enddate ? null :
+                    ...row, [stdate]: cleanDate, enddate: row.enddate && cleanDate > row.enddate ? null :
                         row.enddate
                 } : row
             ))
@@ -106,7 +110,7 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
         else {
             let updatedrows = rows.map((row, i) => (
                 indx == i ? {
-                    ...row, [stdate]: date
+                    ...row, [stdate]: cleanDate
                 } : row
             ))
             setRows(updatedrows)
@@ -277,7 +281,7 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
 
                                         <td>
                                             <DatePicker className='px-2 py-2 w-36 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                                                selected={row.startdate}
+                                                selected={row.startdate ? new Date(row.startdate + 'T00:00:00') : null}
                                                 onChange={(d) => handleDateChange(d, i, "startdate")}
                                                 placeholderText={`Select Date`}
                                                 dateFormat={'dd/MM/yyyy'}
@@ -285,11 +289,11 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
                                         </td>
                                         <td>
                                             <DatePicker className='px-2 py-2 w-36 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
-                                                selected={row.enddate}
+                                                selected={row.enddate ? new Date(row.enddate + 'T00:00:00') : null}
                                                 onChange={(d) => handleDateChange(d, i, "enddate")}
                                                 placeholderText={`Select Date`}
-                                                startDate={row.startdate}
-                                                minDate={row.startdate}
+                                                startDate={row.startdate ? new Date(row.startdate + 'T00:00:00') : null}
+                                                minDate={row.startdate ? new Date(row.startdate + 'T00:00:00') : null}
                                                 disabled={!row.startdate}
                                                 dateFormat={'dd/MM/yyyy'}
                                             />
