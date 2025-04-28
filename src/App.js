@@ -43,7 +43,7 @@ function App() {
           </button>
           <button className={`p-3 mr-5 rounded-lg text-white border-r-2 ${showCreateGMSheet !== 'Open' ? 'bg-blue-600 hover:bg-blue-800' : 'bg-green-600 hover:bg-green-800'} `}
             onClick={() => handleOpenGM("Open")}>
-            Open/Run GM Sheet
+            Open/Edit Run Sheet
           </button>
 
         </div>

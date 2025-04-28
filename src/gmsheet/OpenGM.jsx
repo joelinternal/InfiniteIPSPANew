@@ -199,7 +199,7 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
                                         </tr>
                                         <tr>
                                             <td>Proposed Rate</td>
-                                            <td className="border border-black px-4 py-2 text-center">12 monts</td>
+                                            <td className="border border-black px-4 py-2 text-center">{lstRevenueOnshore?.monthcount} Months</td>
                                             <td className="border border-black px-4 py-2 text-center">{lstRevenueOffshore?.revenu + lstRevenueOnshore?.revenu}</td>
                                             <td className="border border-black px-4 py-2 text-center">{lstRevenueOnshore?.revenu}</td>
                                             <td className="border border-black px-4 py-2 text-center">{lstRevenueOnshore?.cost}</td>
@@ -335,7 +335,7 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Projected GM</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.projectgmpercentage}</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{Math.abs(lstrunsheetsummary?.projectgmpercentage)}%</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Balance Amount Projected</td>
@@ -378,7 +378,7 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Actual GM</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.projectgmpercentage}</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{Math.abs(lstrunsheetsummaryYTD?.projectgmpercentage)}%</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Balance Amount YTD</td>

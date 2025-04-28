@@ -188,18 +188,18 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
         setRows(updatedrows)
 
     }, [refresh])
-       
+
     useEffect(() => {
         if (appSowId > 0) {
             let updatedrows = rows.map((row, i) => (
                 {
-                    ...row, sow: appSowId,accountId:appAccountId,projectId:appProjectId
+                    ...row, sow: appSowId, accountId: appAccountId, projectId: appProjectId
                 }
             ))
             setRows(updatedrows)
         }
 
-    }, [appAccountId,appProjectId,appSowId])
+    }, [appAccountId, appProjectId, appSowId])
 
     return (
         <>{appAccountId > 0 && appProjectId > 0 && appSowId > 0 && <>
@@ -412,7 +412,16 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
                             }
                         </tbody>
                     </table>
+
+                    <div className='flex justify-end'>
+                        <button
+                            className='bg-blue-600 text-white m-2 py-2 px-10 mb-5 hover:bg-blue-800 rounded-lg text-[20px] disabled:cursor-not-allowed disabled:opacity-50'>Submit GM Sheet
+                        </button>
+                    </div>
+
+
                 </div>
+
             }
         </>
         }
