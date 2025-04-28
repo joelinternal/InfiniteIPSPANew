@@ -188,42 +188,18 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
         setRows(updatedrows)
 
     }, [refresh])
-
+       
     useEffect(() => {
-        if (accountId > 0) {
+        if (appSowId > 0) {
             let updatedrows = rows.map((row, i) => (
                 {
-                    ...row, accountId: accountId
+                    ...row, sow: appSowId,accountId:appAccountId,projectId:appProjectId
                 }
             ))
             setRows(updatedrows)
         }
 
-    }, [accountId])
-
-    useEffect(() => {
-        if (projectId > 0) {
-            let updatedrows = rows.map((row, i) => (
-                {
-                    ...row, projectId: projectId
-                }
-            ))
-            setRows(updatedrows)
-        }
-
-    }, [projectId])
-
-    useEffect(() => {
-        if (sowId > 0) {
-            let updatedrows = rows.map((row, i) => (
-                {
-                    ...row, sow: sowId
-                }
-            ))
-            setRows(updatedrows)
-        }
-
-    }, [sowId])
+    }, [appAccountId,appProjectId,appSowId])
 
     return (
         <>{appAccountId > 0 && appProjectId > 0 && appSowId > 0 && <>

@@ -31,6 +31,30 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
         "totalmargin": 0
     });
 
+    const [lstrunsheetsummary,setlstrunsheetsummary]=useState({
+        "actualrevenueprojection":0,
+        "afterdiscount":0,
+        "plannedgmpercentage":0,
+        "plannedgm":0,
+        "plannedcostnottoextend":0,
+        "actualcostprojection":0,
+        "costoverrun":0,
+        "projectgmpercentage":0,
+        "balanceamountprojected":0
+    })
+
+    const [lstrunsheetsummaryYTD,setlstrunsheetsummaryYTD]=useState({
+        "actualrevenueprojection":0,
+        "afterdiscount":0,
+        "plannedgmpercentage":0,
+        "plannedgm":0,
+        "plannedcostnottoextend":0,
+        "actualcostprojection":0,
+        "costoverrun":0,
+        "projectgmpercentage":0,
+        "balanceamountprojected":0
+    })
+
     const getdata = (accountId, projectId) => {
         axios.get(`http://localhost:5071/api/GM/${accountId}/${projectId}`).then(res => {
             setlistdata(res.data)
@@ -59,6 +83,14 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
         })
     }
 
+    const getRunsheetSummary = () => {
+        axios.get(`http://localhost:5071/api/GM/Runsheetsummary/${accountId}/${projectId}`).then(res => {
+            setlstrunsheetsummary(res.data?.SummaryActual)
+            setlstrunsheetsummaryYTD(res.data?.SummaryYTD)
+
+        })
+    }
+
     useEffect(() => {
         if (accountId > 0 && projectId > 0) {
             getdata(accountId, projectId)
@@ -82,6 +114,7 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
                 })
             });
             setRunSheetPayload(payload);
+            getRunsheetSummary();
         }
     }, [listloadrunsheet])
 
@@ -274,39 +307,39 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Actual Revenue + Projection</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.actualrevenueprojection}</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>After Discount</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.afterdiscount}</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Planned GM %</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.plannedgmpercentage}%</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Planned GM</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.plannedgm}</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Planned cost not to exceed</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.plannedcostnottoextend}</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Actual Cost + Projection</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.actualcostprojection}</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Cost Overrun / within limit</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{Math.abs(lstrunsheetsummary?.costoverrun)}</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Projected GM</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.projectgmpercentage}</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Balance Amount Projected</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.balanceamountprojected}</td>
                                     </tr>
                                 </table>
                             </div>
@@ -317,39 +350,39 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Actual Revenue YTD</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.actualrevenueprojection}</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>After Discount</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.afterdiscount}</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Planned GM %</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.plannedgmpercentage}%</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Planned GM</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.plannedgm}</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Planned cost not to exceed</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.plannedcostnottoextend}</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Actual Cost YTD</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.actualcostprojection}</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Cost Overrun / within limit</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{Math.abs(lstrunsheetsummaryYTD?.costoverrun)}</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Actual GM</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.projectgmpercentage}</td>
                                     </tr>
                                     <tr>
                                         <td className='px-2 py-1 border border-black'>Balance Amount YTD</td>
-                                        <td className='px-2 py-1 border border-black text-right'>27,24,798</td>
+                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.balanceamountprojected}</td>
                                     </tr>
                                 </table>
                             </div>
