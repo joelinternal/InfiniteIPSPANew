@@ -1,6 +1,15 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react'
 import { saveAs } from "file-saver";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
+const date = new Date();
+const options = { month: 'short' };
+const month = date.toLocaleDateString('en-US', options);
+const year = String(date.getFullYear()).slice(-2);
+
+const currentMonthYear = `${month} ${year}`;
 
 const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
 
@@ -12,6 +21,38 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
 
     const [runSheetPayload, setRunSheetPayload] = useState([]);
     const [isRunSheetSave, setIsRunSheetSave] = useState(false);
+    const [isGmSheetSave, setIsGmSheetSave] = useState(false);
+    const [refresh, setRefresh] = useState(true);
+
+    const [initialData, setInitialData] = useState({
+        slno: 0,
+        brspdMgr: "",
+        program: "",
+        status: "Active",
+        name: "",
+        roleaspersow: "",
+        duration: "",
+        startdate: null,
+        enddate: null,
+        location: "Offshore",
+        type: "salaried",
+        hours: "",
+        billrate: "",
+        payrate: "",
+        loadedrate: "",
+        billable: "Yes",
+        accountId: 0,
+        projectId: 0,
+        sow: 0,
+        test: "",
+        source: "RunSheet",
+        totalcost: 0,
+        totalrevenueytd: 0,
+        totalrevenueytdproject: 0,
+        totalrevenue: 0,
+    })
+
+    const [rows, setRows] = useState([])
 
     const [lstRevenueOnshore, setlstRevenueOnshore] = useState({
         "revenu": 0,
@@ -31,31 +72,31 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
         "totalmargin": 0
     });
 
-    const [lstrunsheetsummary,setlstrunsheetsummary]=useState({
-        "actualrevenueprojection":0,
-        "afterdiscount":0,
-        "plannedgmpercentage":0,
-        "plannedgm":0,
-        "plannedcostnottoextend":0,
-        "actualcostprojection":0,
-        "costoverrun":0,
-        "projectgmpercentage":0,
-        "balanceamountprojected":0
+    const [lstrunsheetsummary, setlstrunsheetsummary] = useState({
+        "actualrevenueprojection": 0,
+        "afterdiscount": 0,
+        "plannedgmpercentage": 0,
+        "plannedgm": 0,
+        "plannedcostnottoextend": 0,
+        "actualcostprojection": 0,
+        "costoverrun": 0,
+        "projectgmpercentage": 0,
+        "balanceamountprojected": 0
     })
 
-    const [lstrunsheetsummaryYTD,setlstrunsheetsummaryYTD]=useState({
-        "actualrevenueprojection":0,
-        "afterdiscount":0,
-        "plannedgmpercentage":0,
-        "plannedgm":0,
-        "plannedcostnottoextend":0,
-        "actualcostprojection":0,
-        "costoverrun":0,
-        "projectgmpercentage":0,
-        "balanceamountprojected":0
+    const [lstrunsheetsummaryYTD, setlstrunsheetsummaryYTD] = useState({
+        "actualrevenueprojection": 0,
+        "afterdiscount": 0,
+        "plannedgmpercentage": 0,
+        "plannedgm": 0,
+        "plannedcostnottoextend": 0,
+        "actualcostprojection": 0,
+        "costoverrun": 0,
+        "projectgmpercentage": 0,
+        "balanceamountprojected": 0
     })
 
-    const getdata = (accountId, projectId) => {
+    const getdata = () => {
         axios.get(`http://localhost:5071/api/GM/${accountId}/${projectId}`).then(res => {
             setlistdata(res.data)
         })
@@ -87,14 +128,14 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
         axios.get(`http://localhost:5071/api/GM/Runsheetsummary/${accountId}/${projectId}`).then(res => {
             setlstrunsheetsummary(res.data?.SummaryActual)
             setlstrunsheetsummaryYTD(res.data?.SummaryYTD)
-
         })
     }
 
     useEffect(() => {
         if (accountId > 0 && projectId > 0) {
-            getdata(accountId, projectId)
+            getdata()
             getRevenue()
+            setInitialData({ ...initialData, accountId, projectId, sow: sowId })
         }
     }, [refreshlst, projectId, accountId])
 
@@ -153,6 +194,109 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
             setIsRunSheetSave(false);
         })
     }
+
+    const addMember = () => {
+        setRows([...rows, { ...initialData, slno: rows.length + 1 }])
+        setIsGmSheetSave(true);
+    }
+
+    const handleChange = (evnt, ind) => {
+        const { name, value } = evnt.target;
+        let updatedrows = rows.map((row, i) => (
+            ind == i ? {
+                ...row, [name]: value
+            } : row
+        ))
+        setRows(updatedrows)
+        if (name == "payrate" || name == "location") {
+            setTimeout(() => {
+                setRefresh(i => !i)
+            }, 100)
+        }
+    }
+
+    const handleDateChange = (date, indx, stdate) => {
+        if (!date) return;
+        const cleanDate = `${date.getFullYear()}-${(date.getMonth() + 1)
+            .toString()
+            .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+        if (stdate == "startdate") {
+            let updatedrows = rows.map((row, i) => (
+                indx == i ? {
+                    ...row, [stdate]: cleanDate, enddate: row.enddate && cleanDate > row.enddate ? null :
+                        row.enddate
+                } : row
+            ))
+            setRows(updatedrows)
+        }
+        else {
+            let updatedrows = rows.map((row, i) => (
+                indx == i ? {
+                    ...row, [stdate]: cleanDate
+                } : row
+            ))
+            setRows(updatedrows)
+        }
+    }
+
+    useEffect(() => {
+        let updatedrows = rows.map((row, i) => {
+            if (row.location == 'Onshore' && row.type == 'salaried') {
+                return {
+                    ...row, loadedrate: (parseInt(row.payrate) * 1.23).toFixed(2) + ""
+                }
+            }
+            else if (row.type == 'contractor') {
+                return {
+                    ...row, loadedrate: (parseInt(row.payrate) * 1.05).toFixed(2) + ""
+                }
+
+            }
+            else if (row.type == 'hourely') {
+                return {
+                    ...row, loadedrate: (parseInt(row.payrate) * 1.12).toFixed(2) + ""
+                }
+            }
+
+            else if (row.type === 'employee' || row.type == 'shared') {
+                return {
+                    ...row, loadedrate: (parseInt(row.payrate) * 1.056).toFixed(2) + ""
+                }
+            }
+            else if (row.location == 'Offshore') {
+                return {
+                    ...row, loadedrate: (parseInt(row.payrate) * 1.056).toFixed(2) + ""
+                }
+            }
+            else {
+                return row
+            }
+        })
+        setRows(updatedrows)
+
+    }, [refresh])
+
+    const handleSaveGmSheet = () => {
+        axios.post("http://localhost:5071/api/GM", rows).then(res => {
+            setRows([]);
+            setIsGmSheetSave(false);
+            handleloadrunsheet();
+            getdata();
+            getRevenue();
+            getRunsheetSummary();
+        })
+    }
+
+    const handleSaveAll = () => {
+        if(isRunSheetSave){
+            handleSaveRunSheet();
+        }
+        if(isGmSheetSave){
+            handleSaveGmSheet();
+        }        
+    }
+
+    let showTextBox = 0;
 
     return (
         <>
@@ -263,18 +407,18 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
                                                     <td className="p-2 border border-gray-600">{row.billable}</td>
                                                     <td className='p-2 border border-gray-600'>
                                                         {row.status === 'Active' && row.billable === 'Yes' && (
-                                                            <td>{(row.billrate * 168).toFixed(2)}</td>
+                                                            <>{(row.billrate * 168).toFixed(2)}</>
                                                         )}
                                                     </td>
                                                     <td className='p-2 border border-gray-600'>
                                                         {
                                                             row.duration !== "" && (
-                                                                <td>{(row.billrate * 168 * row.duration).toFixed(2)} </td>
+                                                                <>{(row.billrate * 168 * row.duration).toFixed(2)} </>
                                                             )}
                                                     </td>
                                                     <td className='p-2 border border-gray-600'>
                                                         {row.status === 'Active' && row.billable === 'Yes' && (
-                                                            <td>{(row.loadedrate * 168 * 12).toFixed(2)}</td>
+                                                            <>{(row.loadedrate * 168 * 12).toFixed(2)}</>
                                                         )}
                                                     </td>
                                                     <td>
@@ -302,88 +446,92 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
                         <div className='flex items-start'>
                             <div className='m-4'>
                                 <table className="border border-black shadow-lg">
-                                    <tr className='bg-red-200 font-semibold text-center'>
-                                        <td className='px-2 py-1 border border-black' colSpan={2}>Summary (Actual + Projection)</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Actual Revenue + Projection</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.actualrevenueprojection}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>After Discount</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.afterdiscount}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Planned GM %</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.plannedgmpercentage}%</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Planned GM</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.plannedgm}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Planned cost not to exceed</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.plannedcostnottoextend}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Actual Cost + Projection</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.actualcostprojection}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Cost Overrun / within limit</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{Math.abs(lstrunsheetsummary?.costoverrun)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Projected GM</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{Math.abs(lstrunsheetsummary?.projectgmpercentage)}%</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Balance Amount Projected</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.balanceamountprojected}</td>
-                                    </tr>
+                                    <tbody>
+                                        <tr className='bg-red-200 font-semibold text-center'>
+                                            <td className='px-2 py-1 border border-black' colSpan={2}>Summary (Actual + Projection)</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Actual Revenue + Projection</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.actualrevenueprojection}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>After Discount</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.afterdiscount}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Planned GM %</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.plannedgmpercentage}%</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Planned GM</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.plannedgm}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Planned cost not to exceed</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.plannedcostnottoextend}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Actual Cost + Projection</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.actualcostprojection}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Cost Overrun / within limit</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{Math.abs(lstrunsheetsummary?.costoverrun)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Projected GM</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{Math.abs(lstrunsheetsummary?.projectgmpercentage)}%</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Balance Amount Projected</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummary?.balanceamountprojected}</td>
+                                        </tr>
+                                    </tbody>
                                 </table>
                             </div>
                             <div className='m-4'>
                                 <table className="border border-black shadow-lg">
-                                    <tr className='bg-green-200 font-semibold text-center'>
-                                        <td className='px-2 py-1 border border-black' colSpan={2}>Summary (YTD)</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Actual Revenue YTD</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.actualrevenueprojection}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>After Discount</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.afterdiscount}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Planned GM %</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.plannedgmpercentage}%</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Planned GM</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.plannedgm}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Planned cost not to exceed</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.plannedcostnottoextend}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Actual Cost YTD</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.actualcostprojection}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Cost Overrun / within limit</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{Math.abs(lstrunsheetsummaryYTD?.costoverrun)}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Actual GM</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{Math.abs(lstrunsheetsummaryYTD?.projectgmpercentage)}%</td>
-                                    </tr>
-                                    <tr>
-                                        <td className='px-2 py-1 border border-black'>Balance Amount YTD</td>
-                                        <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.balanceamountprojected}</td>
-                                    </tr>
+                                    <tbody>
+                                        <tr className='bg-green-200 font-semibold text-center'>
+                                            <td className='px-2 py-1 border border-black' colSpan={2}>Summary (YTD)</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Actual Revenue YTD</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.actualrevenueprojection}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>After Discount</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.afterdiscount}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Planned GM %</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.plannedgmpercentage}%</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Planned GM</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.plannedgm}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Planned cost not to exceed</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.plannedcostnottoextend}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Actual Cost YTD</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.actualcostprojection}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Cost Overrun / within limit</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{Math.abs(lstrunsheetsummaryYTD?.costoverrun)}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Actual GM</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{Math.abs(lstrunsheetsummaryYTD?.projectgmpercentage)}%</td>
+                                        </tr>
+                                        <tr>
+                                            <td className='px-2 py-1 border border-black'>Balance Amount YTD</td>
+                                            <td className='px-2 py-1 border border-black text-right'>{lstrunsheetsummaryYTD?.balanceamountprojected}</td>
+                                        </tr>
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -488,14 +636,105 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
                                             </tr>
                                         ))
                                     }
+                                    {
+                                        rows.map((row, i) => (
+                                            <tr key={"RunSHeetTRNew-" + i} className=' whitespace-nowrap'>
+                                                <td className="p-2 border border-gray-600">
+                                                    <input className='w-36 px-4 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' type='text' value={row.brspdMgr} name='brspdMgr' onChange={(e) => { handleChange(e, i) }} />
+                                                </td>
+                                                <td className="p-2 border border-gray-600">
+                                                    <input className='w-36 px-4 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' type='text' value={row.program} name='program' onChange={(e) => { handleChange(e, i) }} />
+                                                </td>
+                                                <td className="p-2 border border-gray-600">
+                                                    <select className='w-36 px-8 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' value={row.status} name='status' onChange={(e) => { handleChange(e, i) }}>
+                                                        <option value={"Active"}>Active</option>
+                                                        <option value={"InActive"}>InActive</option>
+                                                    </select>
+                                                </td>
+                                                <td className="p-2 border border-gray-600">
+                                                    <input className='w-36 px-4 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' type='text' value={row.name} name='name' onChange={(e) => { handleChange(e, i) }} />
+                                                </td>
+                                                <td className="p-2 border border-gray-600">
+                                                    <input className='w-36 px-4 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' type='text' value={row.roleaspersow} name='roleaspersow' onChange={(e) => { handleChange(e, i) }} />
+                                                </td>
+                                                <td className="p-2 border border-gray-600">
+                                                    <input type='number' min={1} className='w-36 px-4 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' value={row.duration} name='duration' onChange={(e) => { handleChange(e, i) }} />
+                                                </td>
+                                                <td className="p-2 border border-gray-600 whitespace-nowrap">
+                                                    <DatePicker className='px-2 py-2 w-36 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                                                        selected={row.startdate ? new Date(row.startdate + 'T00:00:00') : null}
+                                                        onChange={(d) => handleDateChange(d, i, "startdate")}
+                                                        placeholderText={`Select Date`}
+                                                        dateFormat={'dd/MM/yyyy'}
+                                                    />
+                                                </td>
+                                                <td className="p-4 border border-gray-600 whitespace-nowrap">
+                                                    <DatePicker className='px-2 py-2 w-36 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                                                        selected={row.enddate ? new Date(row.enddate + 'T00:00:00') : null}
+                                                        onChange={(d) => handleDateChange(d, i, "enddate")}
+                                                        placeholderText={`Select Date`}
+                                                        startDate={row.startdate ? new Date(row.startdate + 'T00:00:00') : null}
+                                                        minDate={row.startdate ? new Date(row.startdate + 'T00:00:00') : null}
+                                                        disabled={!row.startdate}
+                                                        dateFormat={'dd/MM/yyyy'}
+                                                    />
+                                                </td>
+                                                <td className="p-2 border border-gray-600">
+                                                    <select className='w-36 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' value={row.location} name='location' onChange={(e) => { handleChange(e, i) }}>
+                                                        <option value={"Offshore"}>Offshore</option>
+                                                        <option value={"Onshore"}>Onshore</option>
+                                                    </select>
+                                                </td>
+                                                <td className="p-2 border border-gray-600">
+                                                    <select className='w-36 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' value={row.type} name='type' onChange={(e) => { handleChange(e, i) }}>
+                                                        <option value={"salaried"}>Salaried</option>
+                                                        <option value={"contractor"}>Contractor</option>
+                                                        <option value={"hourely"}>Hourely</option>
+                                                        <option value={"employee"}>Employee</option>
+                                                        <option value={"shared"}>Shared</option>
+                                                    </select>
+                                                </td>
+                                                <td className="p-2 border border-gray-600">
+                                                    <input type='number' className='w-36 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' value={row.billrate} name='billrate' min={1} maxLength={5} onChange={(e) => { handleChange(e, i) }} />
+                                                </td>
+                                                <td className="p-2 border border-gray-600">
+                                                    <input type='number' className='w-36 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' value={row.payrate} name='payrate' min={1} maxLength={5} onChange={(e) => { handleChange(e, i) }} />
+                                                </td>
+                                                <td className="p-2 border border-gray-600"><input className='w-36 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' type='text' value={row.loadedrate} readOnly /></td>
+                                                <td className="p-2 border border-gray-600">
+                                                    <select className='w-36 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' value={row.billable} name='billable' onChange={(e) => { handleChange(e, i) }}>
+                                                        <option value={"Yes"}>Yes</option>
+                                                        <option value={"No"}>No</option>
+                                                    </select>
+                                                </td>
+                                                {
+                                                    runSheetTableMonthHeaders.map((runsheetHeaders, iH) => {
+                                                        if (currentMonthYear === runsheetHeaders) {
+                                                            showTextBox++;
+                                                        }
+                                                        return (<td className='px-2 py-2 border border-gray-600' key={"TableBodYNew-" + iH}>{(runsheetHeaders === currentMonthYear && showTextBox % 2 == 1) ?
+                                                            <input className='w-36 px-4 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' type='number' name='hours' value={row.hours} onChange={(evt) => handleChange(evt, i)} />
+                                                            : 0
+                                                        }</td>
+                                                        )
+                                                    })
+                                                }
+                                                <td className="p-2 border border-gray-600">{row.totalcost}</td>
+                                                <td className="p-2 border border-gray-600">{row.totalrevenue}</td>
+                                                <td className="p-2 border border-gray-600">{row.totalrevenueytd}</td>
+                                                <td className="p-2 border border-gray-600">{row.totalrevenueytdproject}</td>
+                                            </tr>
+                                        ))
+                                    }
                                 </tbody>
                             </table>
                         </div>
                         <div className='flex justify-end'>
                             <button className='bg-blue-600 text-white m-2 py-2 px-10 hover:bg-blue-800 rounded-xl text-[20px]' onClick={downloadExcel}>Export to Excel</button>
-                            {isRunSheetSave &&
-                                <button className='bg-green-600 text-white m-2 py-2 px-10 hover:bg-green-800 rounded-xl text-[20px]' onClick={handleSaveRunSheet}>Save RunSheet</button>
+                            {(isRunSheetSave || isGmSheetSave) &&
+                                <button className='bg-green-600 text-white m-2 py-2 px-10 hover:bg-green-800 rounded-xl text-[20px]' onClick={handleSaveAll}>Save RunSheet</button>
                             }
+                            <button className='bg-purple-600 text-white m-2 py-2 px-10 hover:bg-purple-800 rounded-xl text-[20px]' onClick={addMember}>Add Member</button>
                         </div>
                     </>
                     }
