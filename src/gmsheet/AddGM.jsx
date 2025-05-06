@@ -129,7 +129,7 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
     }
 
     const getdata = (accountId, projectId) => {
-        axios.get(`http://localhost:5071/api/GM/${accountId}/${projectId}`).then(res => {
+        axios.get(`http://localhost:5071/api/GM/${accountId}/${projectId}/0`).then(res => {
             if (isNewProject && res.data?.length > 0)
                 setlistdata(res.data)
             else if (!isNewProject && res.data?.length > 0) {

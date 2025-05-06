@@ -97,7 +97,7 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
     })
 
     const getdata = () => {
-        axios.get(`http://localhost:5071/api/GM/${accountId}/${projectId}`).then(res => {
+        axios.get(`http://localhost:5071/api/GM/${accountId}/${projectId}/1`).then(res => {
             setlistdata(res.data)
         })
     }
