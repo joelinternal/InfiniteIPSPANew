@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { saveAs } from "file-saver";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import GmSheetCalculation from './GmSheetCalculation';
 
 const date = new Date();
 const options = { month: 'short' };
@@ -23,6 +24,7 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
     const [isRunSheetSave, setIsRunSheetSave] = useState(false);
     const [isGmSheetSave, setIsGmSheetSave] = useState(false);
     const [refresh, setRefresh] = useState(true);
+    const [refreshGmSheetCalc, setRefreshGmSheetCalc] = useState(true);
 
     const [initialData, setInitialData] = useState({
         slno: 0,
@@ -53,24 +55,6 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
     })
 
     const [rows, setRows] = useState([])
-
-    const [lstRevenueOnshore, setlstRevenueOnshore] = useState({
-        "revenu": 0,
-        "cost": 0,
-        "margin": 0,
-        "marginpercentage": 0,
-        "totalrevenue": 0,
-        "totalmargin": 0
-    });
-
-    const [lstRevenueOffshore, setlstRevenueOffshore] = useState({
-        "revenu": 0,
-        "cost": 0,
-        "margin": 0,
-        "marginpercentage": 0,
-        "totalrevenue": 0,
-        "totalmargin": 0
-    });
 
     const [lstrunsheetsummary, setlstrunsheetsummary] = useState({
         "actualrevenueprojection": 0,
@@ -117,13 +101,6 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
         })
     }
 
-    const getRevenue = () => {
-        axios.get(`http://localhost:5071/api/GM/RevenueDetails/${accountId}/${projectId}`).then(res => {
-            setlstRevenueOnshore(res.data?.onshore)
-            setlstRevenueOffshore(res.data?.offshore)
-        })
-    }
-
     const getRunsheetSummary = () => {
         axios.get(`http://localhost:5071/api/GM/Runsheetsummary/${accountId}/${projectId}`).then(res => {
             setlstrunsheetsummary(res.data?.SummaryActual)
@@ -134,7 +111,7 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
     useEffect(() => {
         if (accountId > 0 && projectId > 0) {
             getdata()
-            getRevenue()
+            setRefreshGmSheetCalc(a => !a);
             setInitialData({ ...initialData, accountId, projectId, sow: sowId })
         }
     }, [refreshlst, projectId, accountId])
@@ -282,7 +259,7 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
             setIsGmSheetSave(false);
             handleloadrunsheet();
             getdata();
-            getRevenue();
+            setRefreshGmSheetCalc(a => !a);
             getRunsheetSummary();
         })
     }
@@ -318,54 +295,7 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
                     {!showRunSheet &&
                         <>
                             <div>
-                                <table className='min-w-full divide-y divide-gray-200 text-sm border border-black' style={{ marginBottom: "2rem" }}>
-                                    <thead className="bg-blue-300">
-                                        <tr className='whitespace-nowrap px-3 py-3 text-[16px]'>
-                                            <td></td>
-                                            <td></td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold text-white bg-blue-800" colSpan={1} >Revenue
-                                            </td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold" colSpan={4}>Onshore
-                                            </td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold" colSpan={4}>Offshore
-                                            </td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold" colSpan={2}>Overall
-                                            </td>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-600">
-                                        <tr className='whitespace-nowrap px-3 py-3 text-[14px]'>
-                                            <td className="border border-black px-4 py-2 text-center"></td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold">Duration</td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold">Total Revenue</td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold">Revenue</td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold">Cost</td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold">Margin</td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold">Margin %</td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold">Revenue</td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold">Cost</td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold">Margin</td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold">Margin %</td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold">Overall Margin</td>
-                                            <td className="border border-black px-4 py-2 text-center font-bold">Total Margin</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Proposed Rate</td>
-                                            <td className="border border-black px-4 py-2 text-center">{lstRevenueOnshore?.monthcount} Months</td>
-                                            <td className="border border-black px-4 py-2 text-center">{lstRevenueOffshore?.revenu + lstRevenueOnshore?.revenu}</td>
-                                            <td className="border border-black px-4 py-2 text-center">{lstRevenueOnshore?.revenu}</td>
-                                            <td className="border border-black px-4 py-2 text-center">{lstRevenueOnshore?.cost}</td>
-                                            <td className="border border-black px-4 py-2 text-center">{lstRevenueOnshore?.margin.toFixed(2)}</td>
-                                            <td className="border border-black px-4 py-2 text-center">{lstRevenueOnshore?.marginpercentage.toFixed(0)}%</td>
-                                            <td className="border border-black px-4 py-2 text-center">{lstRevenueOffshore?.revenu}</td>
-                                            <td className="border border-black px-4 py-2 text-center">{lstRevenueOffshore?.cost}</td>
-                                            <td className="border border-black px-4 py-2 text-center">{lstRevenueOffshore?.margin.toFixed(2)}</td>
-                                            <td className="border border-black px-4 py-2 text-center">{lstRevenueOffshore?.marginpercentage.toFixed(0)}%</td>
-                                            <td className="border border-black px-4 py-2 text-center">{(((lstRevenueOffshore?.revenu + lstRevenueOnshore?.revenu) - (lstRevenueOffshore?.cost + lstRevenueOnshore?.cost)) / (lstRevenueOffshore?.revenu + lstRevenueOnshore?.revenu) * 100).toFixed(0)}%</td>
-                                            <td className="border border-black px-4 py-2 text-center">{(lstRevenueOffshore?.margin + lstRevenueOnshore?.margin).toFixed(2)}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                <GmSheetCalculation accountId={accountId} projectId={projectId} refreshGmSheetCalc={refreshGmSheetCalc} />
                             </div>
                             <div className='overflow-x-auto w-full'>
                                 <table className="min-w-full border border-gray-600 text-sm text-left">

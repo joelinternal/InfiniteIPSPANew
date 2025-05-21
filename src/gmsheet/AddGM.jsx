@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react'
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import GmSheetCalculation from './GmSheetCalculation';
 
 const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, appProjectId, appSowId }) => {
 
@@ -29,6 +30,7 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
         source: "AddGmSheet"
     })
 
+    const [refreshGmSheetCalc, setRefreshGmSheetCalc] = useState(true);
 
     const [rows, setRows] = useState([
         initialData
@@ -36,7 +38,6 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
 
     const [listdata, setlistdata] = useState([])
     const [refresh, setRefresh] = useState(true);
-
 
     const [accountId, setAccountId] = useState(0);
     const [projectId, setProjectId] = useState(0);
@@ -88,6 +89,7 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
     const handleDelete = (Id) => {
         axios.delete(`http://localhost:5071/api/GM/${Id}`).then(res => {
             getdata(accountId, projectId)
+            setRefreshGmSheetCalc(a=>!a);
         })
     }
 
@@ -125,11 +127,13 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
             setRows([initialData])
             setRefreshlst(o => !o)
             getdata(accountId, projectId)
+            setRefreshGmSheetCalc(a=>!a);
         })
     }
 
     const getdata = (accountId, projectId) => {
         axios.get(`http://localhost:5071/api/GM/${accountId}/${projectId}/0`).then(res => {
+            setRefreshGmSheetCalc(a=>!a);
             if (isNewProject && res.data?.length > 0)
                 setlistdata(res.data)
             else if (!isNewProject && res.data?.length > 0) {
@@ -330,6 +334,9 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
                         // disabled={!((screen == "Create" && listdata.length == 0) || screen == "Edit" || isNewProject)}
                         className='bg-blue-600 text-white m-2 py-2 px-10 mb-5 hover:bg-blue-800 rounded-lg text-[20px] disabled:cursor-not-allowed disabled:opacity-50' onClick={handleSave}>Save</button>
                 </div>
+            </div>
+            <div>
+            <GmSheetCalculation accountId={accountId} projectId={projectId} refreshGmSheetCalc={refreshGmSheetCalc} />
             </div>
             {
                 listdata.length > 0 && accountId > 0 && projectId > 0 && sowId > 0 &&
