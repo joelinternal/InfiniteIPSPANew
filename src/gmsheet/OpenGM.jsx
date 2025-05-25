@@ -294,7 +294,7 @@ const OpenGM = ({ refreshlst, projectId, accountId, sowId, accountdata }) => {
                     </div>
                     {!showRunSheet &&
                         <>
-                            <div>
+                            <div className='overflow-x-auto w-full'>
                                 <GmSheetCalculation accountId={accountId} projectId={projectId} refreshGmSheetCalc={refreshGmSheetCalc} />
                             </div>
                             <div className='overflow-x-auto w-full'>

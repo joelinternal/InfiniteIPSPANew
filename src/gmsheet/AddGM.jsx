@@ -335,7 +335,7 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
                         className='bg-blue-600 text-white m-2 py-2 px-10 mb-5 hover:bg-blue-800 rounded-lg text-[20px] disabled:cursor-not-allowed disabled:opacity-50' onClick={handleSave}>Save</button>
                 </div>
             </div>
-            <div>
+            <div className='overflow-x-auto w-full'>
             <GmSheetCalculation accountId={accountId} projectId={projectId} refreshGmSheetCalc={refreshGmSheetCalc} />
             </div>
             {
