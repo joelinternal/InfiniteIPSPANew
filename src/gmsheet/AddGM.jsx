@@ -131,8 +131,16 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
         })
     }
 
-    const getdata = (accountId, projectId) => {
-        axios.get(`http://localhost:5071/api/GM/${accountId}/${projectId}/0`).then(res => {
+    const handleSubmitGMSheet = () => {   
+        axios.post(`http://localhost:5071/api/GM/${accountId}/${projectId}/${sowId}`).then(res => {  
+                  
+        })
+    }
+
+
+    const getdata = (accountId, projectId) => {  
+        
+        axios.get(`http://localhost:5071/api/GM/${accountId}/${projectId}/${sowId}/0`).then(res => {
             setRefreshGmSheetCalc(a=>!a);
             if (isNewProject && res.data?.length > 0)
                 setlistdata(res.data)
@@ -340,6 +348,7 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
             </div>
             {
                 listdata.length > 0 && accountId > 0 && projectId > 0 && sowId > 0 &&
+                <div>
 
                 <div className='overflow-x-auto w-full'>
                     <table className="min-w-full border border-gray-600 text-sm text-left">
@@ -416,14 +425,14 @@ const AddGM = ({ refreshlst, setRefreshlst, screen, accountdata, appAccountId, a
                                 ))
                             }
                         </tbody>
-                    </table>
-
-                    <div className='flex justify-end'>
+                    </table>               
+                </div>  
+                <div className='flex justify-end'>
                         <button
-                            className='bg-blue-600 text-white m-2 py-2 px-10 mb-5 hover:bg-blue-800 rounded-lg text-[20px] disabled:cursor-not-allowed disabled:opacity-50'>Submit GM Sheet
+                            className='bg-blue-600 text-white m-2 py-2 px-10 mb-5 hover:bg-blue-800 rounded-lg text-[20px] disabled:cursor-not-allowed disabled:opacity-50' onClick={handleSubmitGMSheet} >Submit GM Sheet
                         </button>
                     </div>
-                </div>
+                </div>              
             }
         </>
         }
