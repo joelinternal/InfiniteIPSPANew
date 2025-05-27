@@ -60,6 +60,7 @@ function App() {
                 appAccountId={accountId}
                 appProjectId={projectId}
                 appSowId={sowId}
+                refreshlst={refreshlst}
               />
             }
             {
@@ -72,7 +73,7 @@ function App() {
             }
             {
               showCreateGMSheet === 'Edit' &&
-              <AddGM setRefreshlst={setRefreshlst} projectId={projectId} accountId={accountId} screen={selectedScreen} />
+              <AddGM setRefreshlst={setRefreshlst} refreshlst={refreshlst} projectId={projectId} accountId={accountId} screen={selectedScreen} />
             }
           </div>
         </div>
